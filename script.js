@@ -253,7 +253,6 @@ function checkAnswer() {
 
     feedback.textContent =
       `Not quite! Try again. \nPrompt match: ${accuracy}%. \nMissing words: ${missingWordHint}.`;
-
     feedback.className =
       "feedback incorrect";
   }
