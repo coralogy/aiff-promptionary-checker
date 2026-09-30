@@ -143,6 +143,37 @@ function getAnswerAccuracy(userAnswer, acceptedAnswers) {
   return Math.round(Math.max(...similarities) * 100);
 }
 
+function getMissingWordHint(userAnswer, acceptedAnswers) {
+
+  const userWords = normalizeAnswer(userAnswer).split(/\s+/).filter(Boolean);
+  let bestMatch = { missing: 0, total: 0, matched: -1 };
+
+  acceptedAnswers.forEach((answer) => {
+    const answerWords = normalizeAnswer(answer).split(/\s+/).filter(Boolean);
+    const remainingUserWords = [...userWords];
+    let matched = 0;
+
+    answerWords.forEach((word) => {
+      const matchingIndex = remainingUserWords.indexOf(word);
+
+      if (matchingIndex !== -1) {
+        matched += 1;
+        remainingUserWords.splice(matchingIndex, 1);
+      }
+    });
+
+    if (matched > bestMatch.matched) {
+      bestMatch = {
+        missing: answerWords.length - matched,
+        total: answerWords.length,
+        matched
+      };
+    }
+  });
+
+  return `${bestMatch.missing}/${bestMatch.total}`;
+}
+
 
 /* ========================================
    CORRECT STATE
@@ -214,8 +245,14 @@ function checkAnswer() {
 
   } else {
 
+    const missingWordHint =
+      getMissingWordHint(
+        answerInput.value,
+        answers[currentRound]
+      );
+
     feedback.textContent =
-      `Not quite! Try again. Prompt match: ${accuracy}%.`;
+      `Not quite! Try again. \nPrompt match: ${accuracy}%. \nMissing words: ${missingWordHint}.`;
 
     feedback.className =
       "feedback incorrect";

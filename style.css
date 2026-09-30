@@ -447,6 +447,7 @@ textarea::placeholder {
 ======================================== */
 
 .feedback {
+  white-space: pre-line;
   margin: 0;
 
   font-size: 15px;
