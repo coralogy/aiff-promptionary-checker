@@ -460,6 +460,11 @@ textarea::placeholder {
 }
 
 
+.feedback.correct {
+  color: var(--green-dark);
+}
+
+
 /* ========================================
    CORRECT MESSAGE
 ======================================== */

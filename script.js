@@ -97,6 +97,52 @@ function isCorrect(userAnswer, acceptedAnswers) {
   });
 }
 
+function getAnswerAccuracy(userAnswer, acceptedAnswers) {
+
+  const normalizedUserAnswer =
+    normalizeAnswer(userAnswer);
+
+  if (!normalizedUserAnswer) {
+    return 0;
+  }
+
+  const similarities = acceptedAnswers.map((answer) => {
+    const normalizedAnswer = normalizeAnswer(answer);
+    let previousRow = Array.from(
+      { length: normalizedAnswer.length + 1 },
+      (_, index) => index
+    );
+
+    for (let userIndex = 1; userIndex <= normalizedUserAnswer.length; userIndex += 1) {
+      const currentRow = [userIndex];
+
+      for (let answerIndex = 1; answerIndex <= normalizedAnswer.length; answerIndex += 1) {
+        const substitutionCost =
+          normalizedUserAnswer[userIndex - 1] === normalizedAnswer[answerIndex - 1]
+            ? 0
+            : 1;
+
+        currentRow[answerIndex] = Math.min(
+          currentRow[answerIndex - 1] + 1,
+          previousRow[answerIndex] + 1,
+          previousRow[answerIndex - 1] + substitutionCost
+        );
+      }
+
+      previousRow = currentRow;
+    }
+
+    const longestLength = Math.max(
+      normalizedUserAnswer.length,
+      normalizedAnswer.length
+    );
+
+    return 1 - previousRow[normalizedAnswer.length] / longestLength;
+  });
+
+  return Math.round(Math.max(...similarities) * 100);
+}
+
 
 /* ========================================
    CORRECT STATE
@@ -113,9 +159,9 @@ function setCorrectState() {
     "false"
   );
 
-  feedback.textContent = "";
+  feedback.textContent = "Prompt match: 100%";
 
-  feedback.className = "feedback";
+  feedback.className = "feedback correct";
 
   launchConfetti();
 }
@@ -155,6 +201,12 @@ function checkAnswer() {
       answers[currentRound]
     );
 
+  const accuracy =
+    getAnswerAccuracy(
+      answerInput.value,
+      answers[currentRound]
+    );
+
 
   if (correct) {
 
@@ -163,7 +215,7 @@ function checkAnswer() {
   } else {
 
     feedback.textContent =
-      "Not quite! Try again.";
+      `Not quite! Try again. Prompt match: ${accuracy}%.`;
 
     feedback.className =
       "feedback incorrect";
